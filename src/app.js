@@ -8,107 +8,128 @@ const User = require("./models/user");
 app.use(express.json());
 app.use(express.static('public'));
 
+// Helper function to prevent password exposure
+const filterUser = (user) => {
+    const { password, ...filteredUser } = user.toObject();
+    return filteredUser;
+};
+
 // Signup Route
 app.post('/signup', async (req, res) => {
     try {
+        const userExists = await User.findOne({ email: req.body.email });
+        if (userExists) {
+            return res.status(400).json({ error: "Email already exists" });
+        }
+        
         const user = new User(req.body);
         await user.save();
-        res.send("User added successfully");
+        return res.status(201).json({ message: "User added successfully", user: filterUser(user) });
     } catch (err) {
-        if (err.code === 11000) {
-            return res.status(400).send("Email already exists");
-        }
-        res.status(400).json({ error: "Error adding user: " + err.message });
+        return res.status(500).json({ error: "Error adding user: " + err.message });
     }
 });
 
 // Get User by Email
 app.get('/user', async (req, res) => {
-    const userEmail = req.query.emailId;
+    const userEmail = req.query.email;
     if (!userEmail) {
         return res.status(400).json({ error: "Email is required" });
     }
 
     try {
-        const user = await User.findOne({ emailId: userEmail }).select("+password").exec();
+        const user = await User.findOne({ email: userEmail }).exec();
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json(user);
+        return res.json(filterUser(user));
     } catch (err) {
-        res.status(500).json({ error: "Error fetching user: " + err.message });
+        return res.status(500).json({ error: "Error fetching user: " + err.message });
     }
 });
 
-// Get User by ID
+//  Get User by ID
 app.get('/user/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).select("+password").exec();
+        const user = await User.findById(req.params.id).exec();
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json(user);
+        return res.json(filterUser(user));
     } catch (err) {
-        res.status(500).json({ error: "Error fetching user: " + err.message });
+        return res.status(500).json({ error: "Error fetching user: " + err.message });
     }
 });
 
 // Delete User by ID
 app.delete('/user', async (req, res) => {
-    const userId = req.body.userId;
+    const { userId } = req.body;
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+    }
+
     try {
         const user = await User.findByIdAndDelete(userId).exec();
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json({ message: "User deleted successfully", deletedUser: user });
+        return res.json({ message: "User deleted successfully", deletedUser: filterUser(user) });
     } catch (err) {
-        res.status(500).json({ error: "Error deleting user: " + err.message });
+        return res.status(500).json({ error: "Error deleting user: " + err.message });
     }
 });
 
-// Update User by ID
+//Update User by ID
 app.patch('/user', async (req, res) => {
-    const userId = req.body.userId;
-    let data = { ...req.body };
+    const { userId, password, ...updateData } = req.body;
 
-    // If password is being updated, hash it
-    if (data.password) {
+    if (!userId) {
+        return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const allowedUpdates = ["photoUrl", "about", "gender", "age", "skills"];
+    const isUpdateValid = Object.keys(updateData).every((key) => allowedUpdates.includes(key));
+
+    if (!isUpdateValid) {
+        return res.status(400).json({ error: "Invalid update fields" });
+    }
+
+    if (password) {
         try {
             const salt = await bcrypt.genSalt(10);
-            data.password = await bcrypt.hash(data.password, salt);
+            updateData.password = await bcrypt.hash(password, salt);
         } catch (error) {
             return res.status(500).json({ error: "Error hashing password" });
         }
     }
 
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, data, {
+        const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
             new: true,
             runValidators: true,
-            returnDocument: "after"
-        }).select("+password");
+        }).exec();
 
         if (!updatedUser) {
             return res.status(404).json({ error: "User not found" });
         }
-        res.json({ message: "User updated successfully", updatedUser });
+
+        return res.json({ message: "User updated successfully", updatedUser: filterUser(updatedUser) });
     } catch (err) {
-        res.status(500).json({ error: "Error updating user: " + err.message });
+        return res.status(500).json({ error: "Error updating user: " + err.message });
     }
 });
 
-// Feed API - Get all users
+//Feed API - Get all users (Excludes Passwords)
 app.get('/feed', async (req, res) => {
     try {
         const users = await User.find({});
-        res.json(users);
+        return res.json(users.map(filterUser));
     } catch (err) {
-        res.status(500).json({ error: "Error fetching users: " + err.message });
+        return res.status(500).json({ error: "Error fetching users: " + err.message });
     }
 });
 
-// Database Connection
+//Database Connection & Start Server
 async function startServer() {
     try {
         await connectDB();
@@ -117,7 +138,6 @@ async function startServer() {
         app.listen(3000, () => {
             console.log(`Server is running on port 3000`);
         });
-
     } catch (err) {
         console.error('Error connecting to DB:', err.message);
         process.exit(1);
