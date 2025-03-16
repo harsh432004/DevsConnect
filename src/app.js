@@ -1,10 +1,12 @@
 const express = require('express');
 const connectDB = require("./config/database");
 require('dotenv').config();
+const bcrypt = require('bcrypt');
 const app = express();
 const User = require("./models/user");
 
 app.use(express.json());
+app.use(express.static('public'));
 
 // Signup Route
 app.post('/signup', async (req, res) => {
@@ -28,7 +30,7 @@ app.get('/user', async (req, res) => {
     }
 
     try {
-        const user = await User.findOne({ emailId: userEmail }).exec();
+        const user = await User.findOne({ emailId: userEmail }).select("+password").exec();
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
@@ -41,7 +43,7 @@ app.get('/user', async (req, res) => {
 // Get User by ID
 app.get('/user/:id', async (req, res) => {
     try {
-        const user = await User.findById(req.params.id).exec();
+        const user = await User.findById(req.params.id).select("+password").exec();
         if (!user) {
             return res.status(404).json({ error: "User not found" });
         }
@@ -68,9 +70,25 @@ app.delete('/user', async (req, res) => {
 // Update User by ID
 app.patch('/user', async (req, res) => {
     const userId = req.body.userId;
-    const data = req.body;
+    let data = { ...req.body };
+
+    // If password is being updated, hash it
+    if (data.password) {
+        try {
+            const salt = await bcrypt.genSalt(10);
+            data.password = await bcrypt.hash(data.password, salt);
+        } catch (error) {
+            return res.status(500).json({ error: "Error hashing password" });
+        }
+    }
+
     try {
-        const updatedUser = await User.findByIdAndUpdate(userId, data, { new: true });
+        const updatedUser = await User.findByIdAndUpdate(userId, data, {
+            new: true,
+            runValidators: true,
+            returnDocument: "after"
+        }).select("+password");
+
         if (!updatedUser) {
             return res.status(404).json({ error: "User not found" });
         }
