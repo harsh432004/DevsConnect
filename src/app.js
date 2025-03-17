@@ -1,12 +1,12 @@
-const express = require('express');
+const express = require("express");
 const connectDB = require("./config/database");
-require('dotenv').config();
-const bcrypt = require('bcrypt');
+require("dotenv").config();
+const bcrypt = require("bcrypt");
 const app = express();
 const User = require("./models/user");
 
 app.use(express.json());
-app.use(express.static('public'));
+app.use(express.static("public"));
 
 // Helper function to prevent password exposure
 const filterUser = (user) => {
@@ -15,24 +15,32 @@ const filterUser = (user) => {
 };
 
 // Signup Route
-app.post('/signup', async (req, res) => {
+app.post("/signup", async (req, res) => {
     try {
-        const userExists = await User.findOne({ email: req.body.email });
+        const { email, firstName, password, gender, age } = req.body;
+
+        if (!email) {
+            return res.status(400).json({ error: "Email is required" });
+        }
+
+        const userExists = await User.findOne({ email });
         if (userExists) {
             return res.status(400).json({ error: "Email already exists" });
         }
-        
+
         const user = new User(req.body);
         await user.save();
         return res.status(201).json({ message: "User added successfully", user: filterUser(user) });
+
     } catch (err) {
         return res.status(500).json({ error: "Error adding user: " + err.message });
     }
 });
 
+
 // Get User by Email
-app.get('/user', async (req, res) => {
-    const userEmail = req.query.email;
+app.get("/user", async (req, res) => {
+    const userEmail = req.query.email; // Fixed field name
     if (!userEmail) {
         return res.status(400).json({ error: "Email is required" });
     }
@@ -48,8 +56,8 @@ app.get('/user', async (req, res) => {
     }
 });
 
-//  Get User by ID
-app.get('/user/:id', async (req, res) => {
+// Get User by ID
+app.get("/user/:id", async (req, res) => {
     try {
         const user = await User.findById(req.params.id).exec();
         if (!user) {
@@ -62,7 +70,7 @@ app.get('/user/:id', async (req, res) => {
 });
 
 // Delete User by ID
-app.delete('/user', async (req, res) => {
+app.delete("/user", async (req, res) => {
     const { userId } = req.body;
     if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
@@ -79,15 +87,15 @@ app.delete('/user', async (req, res) => {
     }
 });
 
-//Update User by ID
-app.patch('/user', async (req, res) => {
+// Update User by ID
+app.patch("/user", async (req, res) => {
     const { userId, password, ...updateData } = req.body;
 
     if (!userId) {
         return res.status(400).json({ error: "User ID is required" });
     }
 
-    const allowedUpdates = ["photoUrl", "about", "gender", "age", "skills"];
+    const allowedUpdates = ["photoURL", "about", "gender", "age", "skills"];
     const isUpdateValid = Object.keys(updateData).every((key) => allowedUpdates.includes(key));
 
     if (!isUpdateValid) {
@@ -119,8 +127,8 @@ app.patch('/user', async (req, res) => {
     }
 });
 
-//Feed API - Get all users (Excludes Passwords)
-app.get('/feed', async (req, res) => {
+// Feed API - Get all users (Excludes Passwords)
+app.get("/feed", async (req, res) => {
     try {
         const users = await User.find({});
         return res.json(users.map(filterUser));
@@ -129,17 +137,17 @@ app.get('/feed', async (req, res) => {
     }
 });
 
-//Database Connection & Start Server
+// Database Connection & Start Server
 async function startServer() {
     try {
         await connectDB();
-        console.log('Connected to DB');
+        console.log("Connected to DB");
 
         app.listen(3000, () => {
             console.log(`Server is running on port 3000`);
         });
     } catch (err) {
-        console.error('Error connecting to DB:', err.message);
+        console.error("Error connecting to DB:", err.message);
         process.exit(1);
     }
 }
