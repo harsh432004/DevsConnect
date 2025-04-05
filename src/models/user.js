@@ -18,7 +18,7 @@ const userSchema = new mongoose.Schema(
         },
         email: {
             type: String,
-            unique: true,
+            unique: [true, "Email already exists"],
             required: [true, "Email is required"],
             lowercase: true,
             trim: true,
@@ -30,12 +30,19 @@ const userSchema = new mongoose.Schema(
         password: {
             type: String,
             required: [true, "Password is required"],
-            // minLength: [8, "Password must be at least 8 characters long"],
-            // select: false, // Exclude password from queries by default
             validate: {
-                validator: (value) => validator.isStrongPassword(value),
-                message: "Enter a strong password",
-            },        },
+                validator: (value) =>
+                    validator.isStrongPassword(value, {
+                        minLength: 8,
+                        minNumbers: 1,
+                        minLowercase: 1,
+                        minUppercase: 1,
+                        minSymbols: 1,
+                    }),
+                message:
+                    "Password must be at least 8 characters long and include at least one number, one lowercase letter, one uppercase letter, and one special character.",
+            },
+        },
         age: {
             type: Number,
             required: [true, "Age is required"],
@@ -52,9 +59,10 @@ const userSchema = new mongoose.Schema(
             type: String,
             default: "/images/image.jpg",
             match: [
-                /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp))$/,
+                /^(https?:\/\/.*\.(?:png|jpg|jpeg|gif|svg|webp))|(^\/images\/.*\.(?:png|jpg|jpeg|gif|svg|webp))$/,
                 "Invalid image URL format",
             ],
+            
         },
         about: {
             type: String,
@@ -64,18 +72,18 @@ const userSchema = new mongoose.Schema(
         },
         skills: {
             type: [String],
+            default: [], // Default empty array to prevent undefined issues
             validate: {
-                validator: (skills) => skills.length <= 10, // Limit skills to 10
+                validator: (skills) => skills.length <= 10,
                 message: "You can add up to 10 skills only",
             },
         },
     },
     {
-        timestamps: true, // Automatically adds `createdAt` & `updatedAt`
+        timestamps: true,
     }
 );
 
-// **Hash password before saving**
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next();
 
