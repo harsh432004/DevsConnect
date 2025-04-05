@@ -4,6 +4,7 @@ require("dotenv").config();
 const bcrypt = require("bcrypt");
 const app = express();
 const User = require("./models/user");
+const {validateSignUpData} = require("./utils/validator");
 
 app.use(express.json());
 app.use(express.static("public"));
@@ -17,26 +18,23 @@ const filterUser = (user) => {
 // Signup Route
 app.post("/signup", async (req, res) => {
     try {
-        const { email, firstName, password, gender, age } = req.body;
+        validateSignUpData(req);
 
-        if (!email) {
-            return res.status(400).json({ error: "Email is required" });
-        }
-
-        const userExists = await User.findOne({ email });
-        if (userExists) {
-            return res.status(400).json({ error: "Email already exists" });
-        }
-
+        // Create new user instance
         const user = new User(req.body);
+        const existingUser = await User.findOne({ email: req.body.email });
+if (existingUser) {
+    return res.status(400).json({ error: "Email already in use" });
+}
+
         await user.save();
+
         return res.status(201).json({ message: "User added successfully", user: filterUser(user) });
 
     } catch (err) {
         return res.status(500).json({ error: "Error adding user: " + err.message });
     }
 });
-
 
 // Get User by Email
 app.get("/user", async (req, res) => {
@@ -95,7 +93,7 @@ app.patch("/user", async (req, res) => {
         return res.status(400).json({ error: "User ID is required" });
     }
 
-    const allowedUpdates = ["photoURL", "about", "gender", "age", "skills"];
+    const allowedUpdates = ["photoURL", "about", "gender", "age", "skills", "password"];
     const isUpdateValid = Object.keys(updateData).every((key) => allowedUpdates.includes(key));
 
     if (!isUpdateValid) {
@@ -112,6 +110,10 @@ app.patch("/user", async (req, res) => {
     }
 
     try {
+        // Optional: Validate manually before update
+        const temp = new User(updateData);
+        await temp.validate();
+
         const updatedUser = await User.findByIdAndUpdate(userId, updateData, {
             new: true,
             runValidators: true,
@@ -126,6 +128,8 @@ app.patch("/user", async (req, res) => {
         return res.status(500).json({ error: "Error updating user: " + err.message });
     }
 });
+
+
 
 // Feed API - Get all users (Excludes Passwords)
 app.get("/feed", async (req, res) => {
@@ -143,9 +147,11 @@ async function startServer() {
         await connectDB();
         console.log("Connected to DB");
 
-        app.listen(3000, () => {
-            console.log(`Server is running on port 3000`);
-        });
+        const PORT = process.env.PORT || 3000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
+
     } catch (err) {
         console.error("Error connecting to DB:", err.message);
         process.exit(1);
