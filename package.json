@@ -1,37 +1,21 @@
 {
-  "name": "intrestfusion",
+  "name": "hackthisfall_interestfusion",
   "version": "1.0.0",
-  "description": "place for devs to interact",
-  "main": "app.js",
+  "private": true,
   "scripts": {
-    "test": "jest",
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "start:frontend": "cd frontend && npm run start",
+    "start:backend": "cd backend && npm run start",
+    "start": "concurrently \"npm run start:frontend\" \"npm run start:backend\"",
+    "dev": "concurrently \"npm run dev:frontend\" \"npm run dev:backend\""
   },
-  "keywords": [
-    "nodejs",
-    "backend"
-  ],
-  "author": "harsh vaidya",
-  "license": "ISC",
   "dependencies": {
-    "bcrypt": "^5.1.1",
-    "cors": "^2.8.5",
-    "dotenv": "^16.4.7",
-    "express": "^4.21.2",
-    "express-validator": "^7.2.1",
-    "joi": "^17.13.3",
-    "mongoose": "^8.10.2",
-    "test": "^3.3.0",
-    "validator": "^13.12.0"
+    "concurrently": "^7.0.0",
+    "prom-client": "^15.1.3",
+    "response-time": "^2.3.3"
   },
   "devDependencies": {
-    "@babel/core": "^7.21.4",
-    "@babel/preset-env": "^7.21.4",
-    "babel-jest": "^29.5.0",
-    "jest": "^29.5.0",
-    "jest-babel": "^1.0.1",
-    "nodemon": "^2.0.22",
-    "supertest": "^6.3.3"
+    "dotenv": "^16.4.7"
   }
 }

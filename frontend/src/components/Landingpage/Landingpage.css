@@ -1,0 +1,224 @@
+.hero-section {
+    background: linear-gradient(to bottom, #1c1f26, #2c343a); /* Subtle gradient */
+    color: #111010;
+    padding: 50px 20px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    margin: 20px auto;
+    max-width: 900px;
+    width: 90%;
+    transition: transform 0.3s ease-in-out;
+    background-image: linear-gradient(to right, rgb(95, 104, 236), rgba(241, 240, 240, 0.952));
+    
+}
+
+.hero-section:hover {
+    transform: scale(1.02);
+}
+
+
+/* Overall page style */
+.landing-page {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: linear-gradient(to right, #6a11cb, #2575fc); /* Purple to blue gradient */
+    min-height: 100vh;
+    overflow-x: hidden;
+    transition: all 0.3s ease-in-out;
+    box-sizing: border-box;
+    zoom: 0.90; /* Slightly zoomed out for a better overall view */
+}
+
+/* Header styling */
+.header {
+    background: rgba(51, 51, 153, 0.85); /* Dark blue */
+    color: white;
+    padding: 60px 20px;
+    text-align: center;
+    width: 100%;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    border-bottom: 4px solid #1f1f7a; /* Subtle blue border */
+    transition: transform 0.3s ease-in-out;
+    height: 20rem;
+    zoom: 0.80;
+}
+
+.project-name1 {
+    font-size: 4rem;
+    margin: 0;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    text-shadow: 3px 3px 8px rgba(0, 0, 0, 0.3);
+    color: #d9e3ff; /* Soft blue */
+}
+
+.tagline {
+    font-size: 1.5rem;
+    margin-top: 10px;
+    font-style: italic;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+/* Section styling */
+.about, .features, .call-to-action {
+    padding: 30px;
+    text-align: center;
+    max-width: 900px;
+    width: 75%;
+    margin-top: 30px;
+    background-color: #e8f0ff; /* Very light blue */
+    border-radius: 12px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+    opacity: 0;
+    animation: fadeIn 0.7s forwards;
+    transform: scale(0.98);
+}
+
+.about:hover, .features:hover, .call-to-action:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+}
+
+.sectionCard {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 40px;
+    align-items: flex-start;
+    margin: 20px auto;
+    width: 100%;
+    max-width: 1200px;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Section title */
+h2 {
+    color: #1f3c88; /* Deep blue */
+    font-size: 2.8rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Feature list style */
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    font-size: 1.2rem;
+    margin: 18px 0;
+    line-height: 1.8;
+    padding-left: 25px;
+    position: relative;
+    font-weight: 400;
+}
+
+li::before {
+    content: "✔";
+    color: #6a11cb; /* Purple checkmark */
+    position: absolute;
+    left: 0;
+    font-size: 1.6rem;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+/* CTA Button */
+.cta-button {
+    background-color: #2575fc; /* Blue button */
+    color: white;
+    padding: 18px 36px;
+    font-size: 1.4rem;
+    border: none;
+    cursor: pointer;
+    border-radius: 8px;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 12px rgba(37, 117, 252, 0.2);
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.cta-button:hover {
+    background-color: #145c9e; /* Darker blue on hover */
+    transform: translateY(-6px);
+    box-shadow: 0 12px 24px rgba(37, 117, 252, 0.3);
+}
+
+/* Footer styling */
+footer {
+    background: linear-gradient(to right, #6a11cb, #679df9); /* Purple to blue gradient */
+    color: rgb(255, 255, 255);
+    padding: 30px;
+    text-align: center;
+    margin-top: auto;
+    width: 100%;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+}
+
+footer p {
+    margin: 0;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: #cfdbfb; /* Soft blue */
+}
+
+.footer1 .social-media-links{
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    gap: 10px;
+}
+
+.footer-content{
+    display: flex;
+    flex-direction: row;
+    justify-content: space-evenly;
+    gap: 100px;
+    align-items: center;
+} 
+
+.social-media-links div{
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 5px;
+}
+
+.footer2 ul,
+.footer3 ul{
+    list-style: none;
+    color: rgb(71, 60, 60) ;
+    font-weight: lighter;
+}
+
+li::before{
+    content: none;
+}
